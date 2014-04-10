@@ -1,5 +1,9 @@
 *.class
 target/
+.settings/
+.classpath
+.project
+
 rebel.xml
 
 # Mobile Tools for Java (J2ME)

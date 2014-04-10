@@ -2,7 +2,7 @@ package SimpleSecurityPermissions;
 
 dialect 'mvel'
 
-import nz.co.nomadconsulting.eesecurity.authorisation.PermissionCheck;
+import nz.co.nomadconsulting.simplesecurity.authorisation.PermissionCheck;
 
 rule InvokeTestAction
   no-loop

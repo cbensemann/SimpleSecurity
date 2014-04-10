@@ -1,0 +1,15 @@
+Authentication
+ * Finish authentication filter
+ * Logout
+ 
+Permissions
+ * Finish rule based and jpa based permission resolving
+ * Split rule based into separate project?
+ * Provide means to configure PermissionResolver
+
+Testing
+ * unit and integration
+ 
+Docs
+ * Finish javadoc
+ * Write quickstart and usage guides

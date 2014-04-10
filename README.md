@@ -3,7 +3,7 @@ SimpleSecurity
 
 Simple Authorization, Roles and Permissions based security framework for CDI applications
 
-# Simple Security 0.0.1 #
+# Simple Security 0.0.1 -- NOT YET PRODUCTION READY #
 
 Simple Security provides a set of easy to use features for securing Java EE applications.
 
