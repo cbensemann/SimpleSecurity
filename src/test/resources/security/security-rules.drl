@@ -1,0 +1,14 @@
+package SimpleSecurityPermissions;
+
+dialect 'mvel'
+
+import nz.co.nomadconsulting.eesecurity.authorisation.PermissionCheck;
+
+rule InvokeTestAction
+  no-loop
+  activation-group "permissions"
+when
+  check: PermissionCheck(resource == "TestAction", operation == "invoke", granted == false)
+then
+  check.grant();
+end
