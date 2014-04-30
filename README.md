@@ -7,9 +7,9 @@ Simple Authorization, Roles and Permissions based security framework for CDI app
 
 Simple Security provides a set of easy to use features for securing Java EE applications.
 
-Visit our site at http://simple-security.org
+Visit our site at http://reallifejava.com/simple-security
 
-The latest Simple Security documentation is available [here](http://simple-security.org/docs/latest).
+The latest Simple Security documentation is available [here](http://reallifejava.com/simple-security/docs/latest).
 
 ## Build Information ##
 
