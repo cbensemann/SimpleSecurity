@@ -1,6 +1,5 @@
 Authentication
  * Finish authentication filter
- * Logout
  
 Permissions
  * Finish rule based and jpa based permission resolving

@@ -38,7 +38,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import javax.persistence.metamodel.SingularAttribute;
@@ -77,7 +76,7 @@ import javax.persistence.metamodel.SingularAttribute;
 @ApplicationScoped
 public class JpaIdentityStore implements IdentityStore {
 
-    @PersistenceContext
+    @Inject
     private EntityManager entityManager;
 
     @Inject
@@ -436,17 +435,18 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    private Object getIdentifier(final Object scope) {
+    private String getIdentifier(final Object scope) {
         final Class<? extends Object> scopeClass = scope.getClass();
         final String idProperty = getIdProperty(scopeClass);
-        Object identifier;
+        String identifier;
         if (idProperty == null) {
             identifier = scope.toString();
         }
         else {
             try {
-                final Field field = scopeClass.getField(idProperty);
-                identifier = field.get(scope);
+                final Field field = scopeClass.getDeclaredField(idProperty);
+                field.setAccessible(true);
+                identifier = String.valueOf(field.get(scope));
             }
             catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
                 // TODO Auto-generated catch block

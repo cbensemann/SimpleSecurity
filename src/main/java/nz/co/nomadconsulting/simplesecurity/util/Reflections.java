@@ -40,7 +40,7 @@ public class Reflections {
     }
 
 
-    public static Object get(final Field field, final Object target)
+    private static Object get(final Field field, final Object target)
             throws Exception {
         final boolean accessible = field.isAccessible();
         try {

@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nz.co.nomadconsulting.simplesecurity;
+package nz.co.nomadconsulting.simplesecurity.idm;
 
-import java.io.Serializable;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-public interface Identity extends Serializable {
-
-    boolean login();
-
-
-    void logout();
-
-
-    boolean isLoggedIn();
+import javax.inject.Qualifier;
 
 
-    boolean hasRole(Object role);
+@Qualifier
+@Target({ PARAMETER, FIELD })
+@Retention(RUNTIME)
+public @interface LoggedOut {
 
-
-    boolean hasPermission(Object resource, String permission);
 }

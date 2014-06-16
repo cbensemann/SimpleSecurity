@@ -25,27 +25,20 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
 @ApplicationScoped
-@WebFilter("/*")
-public class AuthenticationFilter implements Filter {
+public abstract class AuthenticationFilter implements Filter {
 
     @Inject
     private Instance<Identity> identityInstance;
-
-
-    @Override
-    public void init(final FilterConfig filterConfig) throws ServletException {
-        // do nothing
-    }
+    
+    private UrlPatternMatcher urlPatternMatcher;
 
 
     @Override
@@ -75,14 +68,33 @@ public class AuthenticationFilter implements Filter {
                 identity.login();
             }
 
-            // TODO get configuration from somewhere and decide if this is a
-            // secure page request or not
-            chain.doFilter(request, response);
+            if (identity.isLoggedIn() || isNotSecurePage((HttpServletRequest) request)) {
+                chain.doFilter(request, response);
+            }
+            else {
+                // TODO probably need a redirection strategy
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            }
         }
         finally {
             ThreadLocalUtils.currentRequest.set(null);
             ThreadLocalUtils.currentResponse.set(null);
         }
+    }
+
+
+    protected boolean isNotSecurePage(final HttpServletRequest request) {
+        final StringBuffer urlBuffer = new StringBuffer(request.getServletPath());
+        if (request.getQueryString() != null) {
+            urlBuffer.append("?").append(request.getQueryString());
+        }
+        final String requestUri = urlBuffer.toString();
+        return urlPatternMatcher.matches(requestUri);
+    }
+    
+
+    protected void setUrlPatternMatcher(final UrlPatternMatcher urlPatternMatcher) {
+        this.urlPatternMatcher = urlPatternMatcher;
     }
 
 

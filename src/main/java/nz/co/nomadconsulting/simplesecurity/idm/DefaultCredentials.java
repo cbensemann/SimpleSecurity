@@ -47,4 +47,10 @@ public class DefaultCredentials {
         this.password = password;
     }
 
+
+    public void invalidate() {
+        username = null;
+        password = null;
+    }
+
 }

@@ -170,12 +170,14 @@ public class IdentityManager {
                 && isScopeEqual(usersRole, scope)) {
             return true;
         }
-        final Collection<?> roleGroups = (Collection<?>) roleGroupProperty
-                .getValue(usersRole);
-        if (roleGroups != null) {
-            for (final Object object : roleGroups) {
-                if (checkRole(object, scope, requestedRole)) {
-                    return true;
+        if (roleGroupProperty.isSet()) {
+            final Collection<?> roleGroups = (Collection<?>) roleGroupProperty
+                    .getValue(usersRole);
+            if (roleGroups != null) {
+                for (final Object object : roleGroups) {
+                    if (checkRole(object, scope, requestedRole)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -184,7 +186,7 @@ public class IdentityManager {
 
 
     private boolean isRoleEqual(final Object usersRole, final Object requestedRole) {
-        return roleNameProperty.getValue(usersRole).equals(roleNameProperty.getValue(requestedRole));
+        return roleNameProperty.getValue(usersRole).equals(requestedRole);
     }
 
 

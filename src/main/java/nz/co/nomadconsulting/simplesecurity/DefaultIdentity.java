@@ -20,6 +20,7 @@ import nz.co.nomadconsulting.simplesecurity.idm.DefaultCredentials;
 import nz.co.nomadconsulting.simplesecurity.idm.IdentityManager;
 import nz.co.nomadconsulting.simplesecurity.idm.IdentityStoreUserEvent;
 import nz.co.nomadconsulting.simplesecurity.idm.LoggedIn;
+import nz.co.nomadconsulting.simplesecurity.idm.LoggedOut;
 import nz.co.nomadconsulting.simplesecurity.idm.LoginFailedEvent;
 
 import javax.enterprise.context.SessionScoped;
@@ -46,9 +47,11 @@ public class DefaultIdentity implements Identity {
 
     @Inject
     private Event<LoginFailedEvent> loginFailedEvent;
+    
+    @Inject
+    @LoggedOut
+    private Event<IdentityStoreUserEvent> loggedOutEvent;
 
-    @Produces
-    @Current
     private Object user;
 
 
@@ -58,19 +61,27 @@ public class DefaultIdentity implements Identity {
 
 
     @Override
-    public void login() {
+    public boolean login() {
         final boolean success = identityManager.authenticate(
                 credentials.getUsername(), credentials.getPassword());
         // TODO throw exception on login failure
         if (!success) {
             loginFailedEvent.fire(new LoginFailedEvent());
         }
+        return success;
     }
 
 
     @Override
     public void logout() {
-
+        if (isLoggedIn()) {
+            final IdentityStoreUserEvent event = new IdentityStoreUserEvent(user);
+            credentials.invalidate();
+            user = null;
+            loggedOutEvent.fire(event);
+            
+            // TODO should someone invalidate the session?
+        }
     }
 
 
@@ -92,6 +103,8 @@ public class DefaultIdentity implements Identity {
     }
 
 
+    @Produces
+    @Current
     public Object getUser() {
         return user;
     }

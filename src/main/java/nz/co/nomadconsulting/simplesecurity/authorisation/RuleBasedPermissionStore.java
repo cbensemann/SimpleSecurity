@@ -15,6 +15,7 @@
  */
 package nz.co.nomadconsulting.simplesecurity.authorisation;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.kie.api.KieBase;
@@ -24,13 +25,16 @@ import org.kie.api.runtime.KieSession;
 public class RuleBasedPermissionStore implements PermissionStore {
 
     @Inject
-    private KieBase securityRules;
+    private Instance<KieBase> securityRules;
 
 
     @Override
     public boolean hasPermission(final Object identity, final Object resource, final String permission) {
-
-        final KieSession session = securityRules.newKieSession();
+        if (securityRules.isUnsatisfied()) {
+            return false;
+        }
+        
+        final KieSession session = securityRules.get().newKieSession();
 
         final PermissionCheck check = new PermissionCheck(resource, permission);
 
