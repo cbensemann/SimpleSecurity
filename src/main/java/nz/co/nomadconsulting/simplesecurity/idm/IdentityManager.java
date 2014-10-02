@@ -196,6 +196,7 @@ public class IdentityManager {
         }
         final Object usersScope = roleScopeClassProperty.getValue(usersRole);
         // TODO deal with scope class etc in comparison
-        return usersScope == null && scope == null || usersScope.equals(scope);
+        return usersScope == null || usersScope.equals(scope);
+//        return usersScope == null && scope == null || usersScope.equals(scope);
     }
 }

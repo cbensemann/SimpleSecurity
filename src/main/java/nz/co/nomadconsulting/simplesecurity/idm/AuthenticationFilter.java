@@ -1,12 +1,12 @@
 /*
  * Copyright 2014 Nomad Consulting Limited
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,9 +16,9 @@
 package nz.co.nomadconsulting.simplesecurity.idm;
 
 import nz.co.nomadconsulting.simplesecurity.Identity;
-import nz.co.nomadconsulting.simplesecurity.util.ThreadLocalUtils;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
@@ -36,65 +36,57 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class AuthenticationFilter implements Filter {
 
     @Inject
+    private Logger log;
+
+    @Inject
     private Instance<Identity> identityInstance;
-    
+
     private UrlPatternMatcher urlPatternMatcher;
+
+    private UnAuthenticatedResponse unauthenticatedResponse;
 
 
     @Override
     public void doFilter(final ServletRequest request,
             final ServletResponse response, final FilterChain chain)
-                    throws IOException, ServletException {
+            throws IOException, ServletException {
         if (!(request instanceof HttpServletRequest)) {
             throw new ServletException(
                     "This filter can only process HttpServletRequest requests");
         }
-        try {
-            final HttpServletRequest httpRequest = (HttpServletRequest) request;
-            final HttpServletResponse httpResponse = (HttpServletResponse) response;
+        final HttpServletRequest httpRequest = (HttpServletRequest) request;
+        final HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-            final Identity identity = identityInstance.get();
+        final Identity identity = identityInstance.get();
 
-            final String code = request.getParameter("code");
-            final String login = request.getParameter("login");
-
-            if (login != null || code != null) {
-                ThreadLocalUtils.currentRequest.set(httpRequest);
-                ThreadLocalUtils.currentResponse.set(httpResponse);
-
-                // Force session creation
-                httpRequest.getSession();
-
-                identity.login();
-            }
-
-            if (identity.isLoggedIn() || isNotSecurePage((HttpServletRequest) request)) {
-                chain.doFilter(request, response);
-            }
-            else {
-                // TODO probably need a redirection strategy
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            }
+        if (identity.isLoggedIn() || isNotSecurePage((HttpServletRequest) request)) {
+            chain.doFilter(request, response);
         }
-        finally {
-            ThreadLocalUtils.currentRequest.set(null);
-            ThreadLocalUtils.currentResponse.set(null);
+        else {
+            unauthenticatedResponse.respond(httpRequest, httpResponse);
         }
     }
 
 
     protected boolean isNotSecurePage(final HttpServletRequest request) {
         final StringBuffer urlBuffer = new StringBuffer(request.getServletPath());
-        if (request.getQueryString() != null) {
-            urlBuffer.append("?").append(request.getQueryString());
-        }
+//        if (request.getQueryString() != null) {
+//            urlBuffer.append("?").append(request.getQueryString());
+//        }
         final String requestUri = urlBuffer.toString();
-        return urlPatternMatcher.matches(requestUri);
+        final boolean matches = urlPatternMatcher.matches(requestUri);
+        log.fine("matching incoming requestUri " + requestUri + ": " + matches);
+        return matches;
     }
-    
+
 
     protected void setUrlPatternMatcher(final UrlPatternMatcher urlPatternMatcher) {
         this.urlPatternMatcher = urlPatternMatcher;
+    }
+    
+
+    protected void setUnAuthenticatedResponse(final JsfAwareRedirectingUnAuthenticatedResponse responder) {
+        unauthenticatedResponse = responder;
     }
 
 

@@ -95,6 +95,12 @@ public class DefaultIdentity implements Identity {
     public boolean hasRole(final Object role) {
         return identityManager.hasRole(user, role, null);
     }
+    
+    
+    @Override
+    public boolean hasRole(final Object role, final Object scope) {
+        return identityManager.hasRole(user, role, scope);
+    }
 
 
     @Override

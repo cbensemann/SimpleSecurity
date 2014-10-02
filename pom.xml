@@ -54,6 +54,12 @@
 	</build>
 
 	<dependencies>
+        <dependency>
+            <groupId>nz.co.nomadconsulting</groupId>
+            <artifactId>simple-essentials</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
