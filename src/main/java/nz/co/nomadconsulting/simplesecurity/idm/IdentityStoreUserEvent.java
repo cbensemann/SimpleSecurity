@@ -25,7 +25,8 @@ public class IdentityStoreUserEvent {
     }
 
 
-    public Object getUser() {
-        return user;
+    @SuppressWarnings("unchecked")
+    public <T> T getUser() {
+        return (T) user;
     }
 }

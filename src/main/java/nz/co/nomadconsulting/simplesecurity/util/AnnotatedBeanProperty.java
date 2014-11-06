@@ -101,7 +101,7 @@ public class AnnotatedBeanProperty<T extends Annotation> {
     }
 
 
-    public Object getValue(final Object bean) {
+    public <S> S getValue(final Object bean) {
         if (isFieldProperty) {
             return Reflections.getAndWrap(propertyField, bean);
         }

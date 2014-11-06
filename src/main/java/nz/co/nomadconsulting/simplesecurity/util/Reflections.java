@@ -14,10 +14,11 @@ import java.util.List;
 
 public class Reflections {
 
-    public static Object invoke(final Method method, final Object target,
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(final Method method, final Object target,
             final Object... args) throws Exception {
         try {
-            return method.invoke(target, args);
+            return (T) method.invoke(target, args);
         }
         catch (final IllegalArgumentException iae) {
             String message = "Could not invoke method by reflection: "
@@ -40,12 +41,13 @@ public class Reflections {
     }
 
 
-    private static Object get(final Field field, final Object target)
+    @SuppressWarnings("unchecked")
+    private static <T> T get(final Field field, final Object target)
             throws Exception {
         final boolean accessible = field.isAccessible();
         try {
             field.setAccessible(true);
-            return field.get(target);
+            return (T) field.get(target);
         }
         catch (final IllegalArgumentException iae) {
             final String message = "Could not get field value by reflection: "
@@ -80,7 +82,7 @@ public class Reflections {
     }
 
 
-    public static Object getAndWrap(final Field field, final Object target) {
+    public static <T> T getAndWrap(final Field field, final Object target) {
         final boolean accessible = field.isAccessible();
         try {
             field.setAccessible(true);
@@ -123,7 +125,7 @@ public class Reflections {
     }
 
 
-    public static Object invokeAndWrap(final Method method,
+    public static <T> T invokeAndWrap(final Method method,
             final Object target, final Object... args) {
         try {
             return invoke(method, target, args);

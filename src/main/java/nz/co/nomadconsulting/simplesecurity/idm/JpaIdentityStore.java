@@ -377,19 +377,19 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    private void addRoleToUser(final Object user, final Object roleToGrant) {
-        Collection userRoles = (Collection) userRolesProperty.getValue(user);
+    private <T> void addRoleToUser(final T user, final T roleToGrant) {
+        Collection<T> userRoles = userRolesProperty.getValue(user);
 
         if (userRoles == null) {
             final Type propType = userRolesProperty.getPropertyType();
-            Class collectionType;
+            Class<?> collectionType;
 
-            if (propType instanceof Class && Collection.class.isAssignableFrom((Class) propType)) {
-                collectionType = (Class) propType;
+            if (propType instanceof Class && Collection.class.isAssignableFrom((Class<?>) propType)) {
+                collectionType = (Class<?>) propType;
             }
             else if (propType instanceof ParameterizedType &&
-                    Collection.class.isAssignableFrom((Class) ((ParameterizedType) propType).getRawType())) {
-                collectionType = (Class) ((ParameterizedType) propType).getRawType();
+                    Collection.class.isAssignableFrom((Class<?>) ((ParameterizedType) propType).getRawType())) {
+                collectionType = (Class<?>) ((ParameterizedType) propType).getRawType();
             }
             else {
                 throw new IllegalStateException("Could not determine collection type for user roles.");
@@ -397,10 +397,10 @@ public class JpaIdentityStore implements IdentityStore {
 
             // This should either be a Set, or a List...
             if (Set.class.isAssignableFrom(collectionType)) {
-                userRoles = new HashSet();
+                userRoles = new HashSet<T>();
             }
             else if (List.class.isAssignableFrom(collectionType)) {
-                userRoles = new ArrayList();
+                userRoles = new ArrayList<T>();
             }
 
             userRoles.add(roleToGrant);
@@ -458,12 +458,12 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    private String getIdProperty(final Class<?> entityClass) {
+    private <S> String getIdProperty(final Class<S> entityClass) {
         String idProperty = null;
         final Metamodel metamodel = entityManager.getMetamodel();
-        final EntityType entity = metamodel.entity(entityClass);
-        final Set<SingularAttribute> singularAttributes = entity.getSingularAttributes();
-        for (final SingularAttribute singularAttribute : singularAttributes) {
+        final EntityType<S> entity = metamodel.entity(entityClass);
+        final Set<SingularAttribute<? super S, ?>> singularAttributes = entity.getSingularAttributes();
+        for (final SingularAttribute<?, ?> singularAttribute : singularAttributes) {
             if (singularAttribute.isId()) {
                 idProperty = singularAttribute.getName();
                 break;
@@ -496,7 +496,7 @@ public class JpaIdentityStore implements IdentityStore {
 
         if (user != null) {
             final Object role = lookupRole(rolename);
-            final Collection roles = (Collection) userRolesProperty.getValue(user);
+            final Collection<?> roles = userRolesProperty.getValue(user);
             roles.remove(role);
             // TODO what if Role class doesn't implement equals? need to do manual comparison including scope
         }
