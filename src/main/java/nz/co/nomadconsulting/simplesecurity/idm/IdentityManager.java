@@ -20,6 +20,7 @@ import nz.co.nomadconsulting.simplesecurity.authorisation.RoleName;
 import nz.co.nomadconsulting.simplesecurity.util.AnnotatedBeanProperty;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
@@ -163,6 +164,11 @@ public class IdentityManager {
         }
         return false;
     }
+    
+    
+    public Set<?> listRoles() {
+        return store.getAllRoles();
+    }
 
 
     protected boolean checkRole(final Object usersRole, final Object scope, final Object requestedRole) {
@@ -186,6 +192,9 @@ public class IdentityManager {
 
 
     private boolean isRoleEqual(final Object usersRole, final Object requestedRole) {
+        if (usersRole.getClass().equals(requestedRole.getClass())) {
+            return roleNameProperty.getValue(usersRole).equals(roleNameProperty.getValue(requestedRole));
+        }
         return roleNameProperty.getValue(usersRole).equals(requestedRole);
     }
 
@@ -194,9 +203,27 @@ public class IdentityManager {
         if (!roleScopeClassProperty.isSet()) {
             return true;
         }
-        final Object usersScope = roleScopeClassProperty.getValue(usersRole);
-        // TODO deal with scope class etc in comparison
-        return usersScope == null || usersScope.equals(scope);
-//        return usersScope == null && scope == null || usersScope.equals(scope);
+        final Object usersScopeClass = roleScopeClassProperty.getValue(usersRole);
+        final Object usersScopeId = roleScopeIdProperty.getValue(usersRole);
+        return scopeUnset(usersScopeClass, usersScopeId) || (scopeClassMatches(scope, usersScopeClass) && scopeIdentifierMatches(scope, usersScopeId));
+    }
+
+
+    private boolean scopeUnset(final Object usersScopeClass, final Object usersScopeId) {
+        return usersScopeClass == null && usersScopeId == null;
+    }
+
+
+    private boolean scopeIdentifierMatches(final Object scope, final Object usersScopeId) {
+        final Object identifier = store.getIdentifier(scope);
+        if (identifier.getClass().equals(usersScopeId.getClass())) {
+            return usersScopeId.equals(identifier);
+        }
+        return usersScopeId.toString().equals(identifier.toString());
+    }
+
+
+    private boolean scopeClassMatches(final Object scope, final Object usersScopeClass) {
+        return usersScopeClass.equals(scope.getClass().getName());
     }
 }

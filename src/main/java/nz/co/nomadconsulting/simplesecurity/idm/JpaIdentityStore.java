@@ -15,6 +15,7 @@
  */
 package nz.co.nomadconsulting.simplesecurity.idm;
 
+import nz.co.nomadconsulting.simpleessentials.Entities;
 import nz.co.nomadconsulting.simplesecurity.IdentityStoreConfiguration;
 import nz.co.nomadconsulting.simplesecurity.authorisation.RoleName;
 import nz.co.nomadconsulting.simplesecurity.util.AnnotatedBeanProperty;
@@ -38,9 +39,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.metamodel.EntityType;
-import javax.persistence.metamodel.Metamodel;
-import javax.persistence.metamodel.SingularAttribute;
 
 
 /**
@@ -435,9 +433,9 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    private String getIdentifier(final Object scope) {
+    public String getIdentifier(final Object scope) {
         final Class<? extends Object> scopeClass = scope.getClass();
-        final String idProperty = getIdProperty(scopeClass);
+        final String idProperty = Entities.getIdProperty(scopeClass, entityManager);
         String identifier;
         if (idProperty == null) {
             identifier = scope.toString();
@@ -458,22 +456,6 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    private <S> String getIdProperty(final Class<S> entityClass) {
-        String idProperty = null;
-        final Metamodel metamodel = entityManager.getMetamodel();
-        final EntityType<S> entity = metamodel.entity(entityClass);
-        final Set<SingularAttribute<? super S, ?>> singularAttributes = entity.getSingularAttributes();
-        for (final SingularAttribute<?, ?> singularAttribute : singularAttributes) {
-            if (singularAttribute.isId()) {
-                idProperty = singularAttribute.getName();
-                break;
-            }
-        }
-
-        return idProperty;
-    }
-
-
     protected Object lookupRole(final String role) {
         try {
             final Object value = entityManager.createQuery(
@@ -487,6 +469,12 @@ public class JpaIdentityStore implements IdentityStore {
         catch (final NoResultException ex) {
             return null;
         }
+    }
+    
+    public Set<Object> getAllRoles() {
+        final Set<Object> results = new HashSet<Object>();
+        results.addAll(entityManager.createQuery("from " + roleClass.getName() + " where " + roleScopeClassProperty.getName() + " is null", roleClass).getResultList());
+        return results;
     }
 
 
