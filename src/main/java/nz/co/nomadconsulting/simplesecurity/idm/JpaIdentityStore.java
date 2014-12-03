@@ -1,12 +1,12 @@
 /*
  * Copyright 2014 Nomad Consulting Limited
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,22 +45,22 @@ import javax.persistence.NoResultException;
  * An implementation of an {@link IdentityStore} using JPA to access a database. <br/>
  * This implementation requries that you provide configuration using an {@link IdentityStoreConfiguration}. This can be done using an application
  * scoped bean like the following:
- * 
+ *
  * <pre>
  * &#064;ApplicationScoped
  * public class ConfigurationProducer {
- * 
+ *
  *     private IdentityStoreConfiguration configuration;
- * 
- * 
+ *
+ *
  *     &#064;PostConstruct
  *     public void init() {
  *         configuration = new IdentityStoreConfiguration();
  *         configuration.setUserClass(User.class);
  *         configuration.setRoleClass(Role.class);
  *     }
- * 
- * 
+ *
+ *
  *     &#064;Produces
  *     public IdentityStoreConfiguration createConfiguration() {
  *         return configuration;
@@ -176,7 +176,7 @@ public class JpaIdentityStore implements IdentityStore {
             if (encodedSalt == null) {
                 throw new IdentityManagementException(
                         "A @PasswordSalt property was found on entity " + user
-                        + ", but it contains no value");
+                                + ", but it contains no value");
             }
 
             passwordHash = generatePasswordHash(password,
@@ -209,7 +209,7 @@ public class JpaIdentityStore implements IdentityStore {
         try {
             return new PasswordUtils().createPasswordKey(
                     password.toCharArray(), salt, passwordProperty
-                    .getAnnotation().iterations());
+                            .getAnnotation().iterations());
         }
         catch (final GeneralSecurityException ex) {
             throw new IdentityManagementException(
@@ -303,7 +303,7 @@ public class JpaIdentityStore implements IdentityStore {
      *
      * @param username
      *            - username corresponding to the {@link Username} annotation on your user class
-     * 
+     *
      * @return true if the user has been deleted otherwise false
      */
     @Override
@@ -334,10 +334,10 @@ public class JpaIdentityStore implements IdentityStore {
                     .createQuery(
                             "select u from "
                                     + configuration.get().getUserClass()
-                                    .getName() + " u where "
+                                            .getName() + " u where "
                                     + usernameProperty.getName()
                                     + " = :username")
-                                    .setParameter("username", name).getSingleResult();
+                    .setParameter("username", name).getSingleResult();
 
             return user;
         }
@@ -433,6 +433,7 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
+    @Override
     public String getIdentifier(final Object scope) {
         final Class<? extends Object> scopeClass = scope.getClass();
         final String idProperty = Entities.getIdProperty(scopeClass, entityManager);
@@ -460,7 +461,7 @@ public class JpaIdentityStore implements IdentityStore {
         try {
             final Object value = entityManager.createQuery(
                     "select r from " + roleClass.getName() + " r where " + roleNameProperty.getName() +
-                    " = :role")
+                            " = :role")
                     .setParameter("role", role)
                     .getSingleResult();
 
@@ -470,10 +471,13 @@ public class JpaIdentityStore implements IdentityStore {
             return null;
         }
     }
-    
+
+
+    @Override
     public Set<Object> getAllRoles() {
         final Set<Object> results = new HashSet<Object>();
-        results.addAll(entityManager.createQuery("from " + roleClass.getName() + " where " + roleScopeClassProperty.getName() + " is null", roleClass).getResultList());
+        results.addAll(entityManager
+                .createQuery("from " + roleClass.getName() + " where " + roleScopeClassProperty.getName() + " is null", roleClass).getResultList());
         return results;
     }
 
@@ -481,11 +485,25 @@ public class JpaIdentityStore implements IdentityStore {
     @Override
     public void revokeRole(final String username, final String rolename, final Object scope) {
         final Object user = lookupUser(username);
+        final Object role = lookupRole(rolename);
 
+        revokeRole(user, role, scope);
+    }
+
+
+    @Override
+    public void revokeRole(final String username, final Object role, final Object scope) {
+        final Object user = lookupUser(username);
+
+        revokeRole(user, role, scope);
+    }
+
+
+    private void revokeRole(final Object user, final Object role, final Object scope) {
         if (user != null) {
-            final Object role = lookupRole(rolename);
             final Collection<?> roles = userRolesProperty.getValue(user);
             roles.remove(role);
+            persistEntity(user);
             // TODO what if Role class doesn't implement equals? need to do manual comparison including scope
         }
     }

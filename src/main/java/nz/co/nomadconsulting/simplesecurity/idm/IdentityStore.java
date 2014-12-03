@@ -17,12 +17,13 @@ package nz.co.nomadconsulting.simplesecurity.idm;
 
 import java.util.Set;
 
+
 /**
  * Provides an abstraction over and access to an underlying persistent store for user data. This is likely to be a database, ldap, or even a
  * filesystem or anything else.
  *
  * @see JpaIdentityStore
- * 
+ *
  * @author craig
  *
  */
@@ -44,6 +45,9 @@ public interface IdentityStore {
 
 
     void revokeRole(final String username, final String rolename, final Object scope);
+
+
+    void revokeRole(final String user, final Object role, final Object scope);
 
 
     Set<Object> getAllRoles();

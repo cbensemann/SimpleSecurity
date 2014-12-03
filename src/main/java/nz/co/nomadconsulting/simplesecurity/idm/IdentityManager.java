@@ -132,6 +132,28 @@ public class IdentityManager {
         store.revokeRole(user, role, null);
     }
 
+    
+    /**
+     * 
+     * @param user
+     * @param role
+     * @param scope
+     */
+    public void revokeRole(final String user, final String role, final Object scope) {
+        store.revokeRole(user, role, scope);
+    }
+    
+    
+    /**
+     * 
+     * @param user
+     * @param role
+     * @param scope
+     */
+    public void revokeRole(final String user, final Object role, final Object scope) {
+        store.revokeRole(user, role, scope);
+    }
+
 
     /**
      *
@@ -204,8 +226,8 @@ public class IdentityManager {
             return true;
         }
         final Object usersScopeClass = roleScopeClassProperty.getValue(usersRole);
-        final Object usersScopeId = roleScopeIdProperty.getValue(usersRole);
-        return scopeUnset(usersScopeClass, usersScopeId) || (scopeClassMatches(scope, usersScopeClass) && scopeIdentifierMatches(scope, usersScopeId));
+        final Object usersScopeId = roleScopeIdProperty.getValue(usersRole); // TODO this might not be set
+        return scopeUnset(usersScopeClass, usersScopeId) && scope == null || (scopeClassMatches(scope, usersScopeClass) && scopeIdentifierMatches(scope, usersScopeId));
     }
 
 
@@ -224,6 +246,9 @@ public class IdentityManager {
 
 
     private boolean scopeClassMatches(final Object scope, final Object usersScopeClass) {
+        if (scope == null || usersScopeClass == null) { 
+            return false;
+        }
         return usersScopeClass.equals(scope.getClass().getName());
     }
 }

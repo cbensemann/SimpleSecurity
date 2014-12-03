@@ -61,10 +61,48 @@ public class IdentityManagerTest {
         user.roles.add(requestedRole);
         assertThat(identityManager.hasRole(user, requestedRole)).isTrue();
     }
+    
+    
+    @Test
+    public void testHasRoleRoleProvidesScope() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        
+        assertThat(identityManager.hasRole(user, requestedRole)).isFalse();
+        user.roles.add(requestedRole);
+        assertThat(identityManager.hasRole(user, requestedRole)).isTrue();
+    }
+    
+    
+    @Test
+    public void testHasGlobalRoleRoleProvidesScope() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole userRole = new TestRole("admin", null, null);
+        final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        
+        assertThat(identityManager.hasRole(user, requestedRole)).isFalse();
+        user.roles.add(userRole);
+        assertThat(identityManager.hasRole(user, requestedRole)).isFalse();
+    }
+    
+    
+    @Test
+    public void testHasRoleGlobalRoleRequested() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole userRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        final TestRole requestedRole = new TestRole("admin", null, null);
+        
+        assertThat(identityManager.hasRole(user, requestedRole)).isFalse();
+        user.roles.add(userRole);
+        assertThat(identityManager.hasRole(user, requestedRole)).isFalse();
+    }
 
 
     @Test
-    public void testHasRoleWithScope() {
+    public void testHasRoleWithScopeObject() {
         final TestUser user = new TestUser();
         final TestScope scope = new TestScope(123);
         final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
@@ -73,6 +111,58 @@ public class IdentityManagerTest {
         assertThat(identityManager.hasRole(user, requestedRole, scope)).isFalse();
         user.roles.add(requestedRole);
         assertThat(identityManager.hasRole(user, requestedRole, scope)).isTrue();
+    }
+    
+    
+    @Test
+    public void testHasGlobalRoleWithScopeObject() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole requestedRole = new TestRole("admin", null, null);
+        when(store.getIdentifier(scope)).thenReturn(scope.id);
+        
+        assertThat(identityManager.hasRole(user, "admin", scope)).isFalse();
+        user.roles.add(requestedRole);
+        assertThat(identityManager.hasRole(user, "admin", scope)).isFalse();
+    }
+    
+    
+    @Test
+    public void testHasRoleStringWithScope() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        when(store.getIdentifier(scope)).thenReturn(scope.id);
+        
+        assertThat(identityManager.hasRole(user, "admin", scope)).isFalse();
+        user.roles.add(requestedRole);
+        assertThat(identityManager.hasRole(user, "admin", scope)).isTrue();
+    }
+    
+    
+    @Test
+    public void testHasRoleWithNullScope() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        when(store.getIdentifier(scope)).thenReturn(scope.id);
+        
+        assertThat(identityManager.hasRole(user, requestedRole, null)).isFalse();
+        user.roles.add(requestedRole);
+        assertThat(identityManager.hasRole(user, requestedRole, null)).isFalse();
+    }
+    
+    
+    @Test
+    public void testHasRoleStringWithNullScope() {
+        final TestUser user = new TestUser();
+        final TestScope scope = new TestScope(123);
+        final TestRole requestedRole = new TestRole("admin", scope.id.toString(), scope.getClass().getName());
+        when(store.getIdentifier(scope)).thenReturn(scope.id);
+        
+        assertThat(identityManager.hasRole(user, "admin", null)).isFalse();
+        user.roles.add(requestedRole);
+        assertThat(identityManager.hasRole(user, "admin", null)).isFalse();
     }
 
 
