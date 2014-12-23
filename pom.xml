@@ -13,6 +13,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.javax.jee.api.version>7.0</version.javax.jee.api.version>
+        <!-- github server corresponds to entry in ~/.m2/settings.xml -->
+        <github.global.server>github</github.global.server>
 	</properties>
 
 	<build>
@@ -50,6 +52,47 @@
 					</execution>
 				</executions>
 			</plugin>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+                <configuration>
+                    <altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.10</version>
+                <configuration>
+                    <!-- git commit message -->
+                    <message>Maven artifacts for ${project.version}</message>
+                    <!-- disable webpage processing -->
+                    <noJekyll>true</noJekyll>
+                    <!-- matches distribution management repository url above -->
+                    <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory>
+                    <!-- remote branch name -->
+                    <branch>refs/heads/mvn-repo</branch>
+                    <!-- If you remove this then the old artifact will be removed and new 
+                        one will replace. But with the merge tag you can just release by changing 
+                        the version -->
+                    <merge>true</merge>
+                    <includes>
+                        <include>**/*</include>
+                    </includes>
+                    <!-- github repo name -->
+                    <repositoryName>SimpleSecurity</repositoryName>
+                    <!-- github username -->
+                    <repositoryOwner>cbensemann</repositoryOwner>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>site</goal>
+                        </goals>
+                        <phase>deploy</phase>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 
@@ -134,4 +177,31 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+    
+    <developers>
+        <developer>
+            <id>csb</id>
+            <name>Craig Bensemann</name>
+            <email>craig@nomadconsulting.co.nz</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>internal.repo</id>
+            <name>Temporary Staging Repository</name>
+            <url>file://${project.build.directory}/mvn-repo</url>
+        </repository>
+    </distributionManagement>
+    
+    <repositories>
+        <repository>
+            <id>simple-essentials-mvn-repo</id>
+            <url>https://raw.github.com/cbensemann/SimpleEssentials/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
