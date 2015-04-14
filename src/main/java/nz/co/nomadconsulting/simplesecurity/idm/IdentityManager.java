@@ -227,7 +227,8 @@ public class IdentityManager {
         }
         final Object usersScopeClass = roleScopeClassProperty.getValue(usersRole);
         final Object usersScopeId = roleScopeIdProperty.getValue(usersRole); // TODO this might not be set
-        return scopeUnset(usersScopeClass, usersScopeId) && scope == null || (scopeClassMatches(scope, usersScopeClass) && scopeIdentifierMatches(scope, usersScopeId));
+        // TODO I think this might be broken for revoke roles now.
+        return scopeUnset(usersScopeClass, usersScopeId)  || (scopeClassMatches(scope, usersScopeClass) && scopeIdentifierMatches(scope, usersScopeId));
     }
 
 
