@@ -250,6 +250,6 @@ public class IdentityManager {
         if (scope == null || usersScopeClass == null) { 
             return false;
         }
-        return usersScopeClass.equals(scope.getClass().getName());
+        return usersScopeClass.equals(scope.getClass());
     }
 }
