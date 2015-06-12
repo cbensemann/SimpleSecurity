@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Nomad Consulting Limited
+ * Copyright 2015 Nomad Consulting Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,18 @@
  */
 package nz.co.nomadconsulting.simplesecurity.idm;
 
-public class IdentityStoreUserEvent {
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    private Object user;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
+import javax.inject.Qualifier;
 
-    public IdentityStoreUserEvent(final Object user) {
-        this.user = user;
-    }
+@Qualifier
+@Target({ PARAMETER, FIELD })
+@Retention(RUNTIME)
+public @interface PrePersistRole {
 
-
-    @SuppressWarnings("unchecked")
-    public <T> T getUser() {
-        return (T) user;
-    }
 }

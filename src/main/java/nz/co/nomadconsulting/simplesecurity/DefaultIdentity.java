@@ -18,7 +18,7 @@ package nz.co.nomadconsulting.simplesecurity;
 import nz.co.nomadconsulting.simplesecurity.authorisation.PermissionResolver;
 import nz.co.nomadconsulting.simplesecurity.idm.DefaultCredentials;
 import nz.co.nomadconsulting.simplesecurity.idm.IdentityManager;
-import nz.co.nomadconsulting.simplesecurity.idm.IdentityStoreUserEvent;
+import nz.co.nomadconsulting.simplesecurity.idm.IdentityStoreEvent;
 import nz.co.nomadconsulting.simplesecurity.idm.LoggedIn;
 import nz.co.nomadconsulting.simplesecurity.idm.LoggedOut;
 import nz.co.nomadconsulting.simplesecurity.idm.LoginFailedEvent;
@@ -50,12 +50,12 @@ public class DefaultIdentity implements Identity {
     
     @Inject
     @LoggedOut
-    private Event<IdentityStoreUserEvent> loggedOutEvent;
+    private Event<IdentityStoreEvent> loggedOutEvent;
 
     private Object user;
 
 
-    public void loggedInEventListener(@Observes @LoggedIn final IdentityStoreUserEvent event) {
+    public void loggedInEventListener(@Observes @LoggedIn final IdentityStoreEvent event) {
         user = event.getUser();
     }
 
@@ -75,7 +75,7 @@ public class DefaultIdentity implements Identity {
     @Override
     public void logout() {
         if (isLoggedIn()) {
-            final IdentityStoreUserEvent event = new IdentityStoreUserEvent(user);
+            final IdentityStoreEvent event = new IdentityStoreEvent(user);
             credentials.invalidate();
             user = null;
             loggedOutEvent.fire(event);

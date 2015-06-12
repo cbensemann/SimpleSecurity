@@ -82,23 +82,27 @@ public class JpaIdentityStore implements IdentityStore {
 
     @Inject
     @LoggedIn
-    private Event<IdentityStoreUserEvent> loggedInEvent;
+    private Event<IdentityStoreEvent> loggedInEvent;
 
     @Inject
     @UserCreated
-    private Event<IdentityStoreUserEvent> userCreatedEvent;
+    private Event<IdentityStoreEvent> userCreatedEvent;
 
     @Inject
     @UserDeleted
-    private Event<IdentityStoreUserEvent> userDeletedEvent;
+    private Event<IdentityStoreEvent> userDeletedEvent;
 
     @Inject
     @PreDeleteUser
-    private Event<IdentityStoreUserEvent> preDeleteUserEvent;
+    private Event<IdentityStoreEvent> preDeleteUserEvent;
 
     @Inject
     @PrePersistUser
-    private Event<IdentityStoreUserEvent> prePersistUserEvent;
+    private Event<IdentityStoreEvent> prePersistUserEvent;
+    
+    @Inject
+    @PrePersistRole
+    private Event<IdentityStoreEvent> prePersistRoleEvent;
 
     private AnnotatedBeanProperty<Username> usernameProperty;
 
@@ -150,7 +154,7 @@ public class JpaIdentityStore implements IdentityStore {
 
     /**
      * Attempts to authenticate the given user based on the supplied password. <br/>
-     * If the user is successfully authenticated an {@link IdentityStoreUserEvent} is fired providing access to the full user object retrieved from
+     * If the user is successfully authenticated an {@link IdentityStoreEvent} is fired providing access to the full user object retrieved from
      * the database during authentication. The event is qualified with {@link LoggedIn}
      *
      * @param username
@@ -189,7 +193,7 @@ public class JpaIdentityStore implements IdentityStore {
         final boolean success = slowEquals(passwordHash.toCharArray(), ((String) passwordProperty.getValue(user)).toCharArray());
 
         if (success) {
-            loggedInEvent.fire(new IdentityStoreUserEvent(user));
+            loggedInEvent.fire(new IdentityStoreEvent(user));
         }
 
         return success;
@@ -220,8 +224,8 @@ public class JpaIdentityStore implements IdentityStore {
 
     /**
      * Attempts to create a new instance of the user class and sets the username and hashed password/salt. Events will be fired prior to persisting
-     * the user {@link IdentityStoreUserEvent} with a qualifier of {@link PrePersistUser}. This allows you to populate other fields on the object.
-     * After successful creation/persisting another event is fired {@link IdentityStoreUserEvent} with a qualifier of {@link UserCreated}.
+     * the user {@link IdentityStoreEvent} with a qualifier of {@link PrePersistUser}. This allows you to populate other fields on the object.
+     * After successful creation/persisting another event is fired {@link IdentityStoreEvent} with a qualifier of {@link UserCreated}.
      *
      * @param username
      *            - username corresponding to the {@link Username} annotation on your user class
@@ -259,11 +263,11 @@ public class JpaIdentityStore implements IdentityStore {
                 }
             }
 
-            prePersistUserEvent.fire(new IdentityStoreUserEvent(user));
+            prePersistUserEvent.fire(new IdentityStoreEvent(user));
 
             persistEntity(user);
 
-            userCreatedEvent.fire(new IdentityStoreUserEvent(user));
+            userCreatedEvent.fire(new IdentityStoreEvent(user));
 
             return true;
         }
@@ -298,7 +302,7 @@ public class JpaIdentityStore implements IdentityStore {
 
     /**
      * Attempts a {@link #lookupUser(String)} based on the username and removes the entity if found. Event fired prior to deletion -
-     * {@link IdentityStoreUserEvent} with a qualifier of {@link PreDeleteUser} and after successful deletion - {@link IdentityStoreUserEvent} with a
+     * {@link IdentityStoreEvent} with a qualifier of {@link PreDeleteUser} and after successful deletion - {@link IdentityStoreEvent} with a
      * qualifier of {@link UserDeleted}
      *
      * @param username
@@ -314,9 +318,9 @@ public class JpaIdentityStore implements IdentityStore {
                     + "' does not exist");
         }
 
-        preDeleteUserEvent.fire(new IdentityStoreUserEvent(user));
+        preDeleteUserEvent.fire(new IdentityStoreEvent(user));
         removeEntity(user);
-        userDeletedEvent.fire(new IdentityStoreUserEvent(user));
+        userDeletedEvent.fire(new IdentityStoreEvent(user));
 
         return true;
     }
@@ -350,7 +354,7 @@ public class JpaIdentityStore implements IdentityStore {
 
     @Override
     public void grantRole(final Object user, final Object role) {
-        // grantRole(user, role, null);
+         grantRole(usernameProperty.getValue(user).toString(), roleNameProperty.getValue(role).toString(), null);
     }
 
 
@@ -369,9 +373,13 @@ public class JpaIdentityStore implements IdentityStore {
             // TODO throw an exception if role doesn't exist
         }
         else {
+            // TODO should really look up role if it exists
             role = createRole(rolename, scope);
         }
         addRoleToUser(user, role);
+        final IdentityStoreEvent event = new IdentityStoreEvent(user);
+        event.setRole(role);
+        prePersistRoleEvent.fire(event);
         persistEntity(user);
     }
 
