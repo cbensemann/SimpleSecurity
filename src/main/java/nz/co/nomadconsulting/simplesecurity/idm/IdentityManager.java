@@ -100,6 +100,12 @@ public class IdentityManager {
     public boolean deleteUser(final String name) {
         return store.deleteUser(name);
     }
+    
+    
+    
+    public boolean userExists(final String name) {
+       return store.lookupUser(name) != null;
+    }
 
 
     /**

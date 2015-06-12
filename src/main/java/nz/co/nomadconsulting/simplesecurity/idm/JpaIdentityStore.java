@@ -328,7 +328,8 @@ public class JpaIdentityStore implements IdentityStore {
     }
 
 
-    protected Object lookupUser(final String name) {
+    @Override
+    public Object lookupUser(final String name) {
         try {
             final Object user = entityManager
                     .createQuery(

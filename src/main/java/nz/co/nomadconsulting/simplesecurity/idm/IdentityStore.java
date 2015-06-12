@@ -54,4 +54,6 @@ public interface IdentityStore {
 
 
     Object getIdentifier(Object scope);
+    
+    Object lookupUser(final String username);
 }
